@@ -100,7 +100,7 @@ app.post("/flights", (req, res) => {
 
   const { flightData } = req.body;
 
-  const {flightNumber, origin, destination, departure, returnDate, adults, children, infants, travelClass, cost, duration,} = flightData;
+  const { flightNumber, origin, destination, departure, returnDate, adults, children, infants, travelClass, cost, duration, } = flightData;
   pool.query(
     `INSERT INTO flight(flightNumber, origin, destination, departure, returnDate, adults, children, infants, travelClass, cost, duration) 
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
@@ -109,10 +109,10 @@ app.post("/flights", (req, res) => {
     console.log('Flight saved successfully');
     res.status(200).json({ message: "Flight saved successfully" });
   })
-  .catch(error => {
-    console.log(error);
-    res.sendStatus(500);
-  })
+    .catch(error => {
+      console.log(error);
+      res.sendStatus(500);
+    })
 });
 
 app.post("/create-account", (req, res) => {
@@ -136,6 +136,7 @@ app.post("/create-account", (req, res) => {
   })
 })
 
+// -----------PLAN-----------
 app.get("/plan", (req, res) => {
   let city = req.query.city;
   let country = req.query.country;
@@ -180,6 +181,23 @@ app.get("/plan", (req, res) => {
     });
 });
 
+// Add this to your server.js
+app.post('/save-plan', async (req, res) => {
+  try {
+    const { airport, city, country, startDate, endDate } = req.body;
+
+    const result = await pool.query(
+      'INSERT INTO planners (airport, city, country, start_date, end_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [airport, city, country, startDate, endDate]
+    );
+
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Error saving plan:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 /* returns a random 32 byte string */
 function makeToken() {
   return crypto.randomBytes(32).toString("hex");
@@ -220,7 +238,7 @@ app.post("/login", async (req, res) => {
   }
 
   //should only ever return 1 row since emails are unique
-  if(result.rows.length === 1){
+  if (result.rows.length === 1) {
     let account = result.rows[0];
     console.log(account);
     console.log(account.first_name)
@@ -229,7 +247,7 @@ app.post("/login", async (req, res) => {
     console.log("Generated token", token);
     tokenStorage[token] = email;
     return res.cookie("token", token, cookieOptions).send();
-  }else{
+  } else {
     // Credentials Bad
     return res.sendStatus(400);
   }

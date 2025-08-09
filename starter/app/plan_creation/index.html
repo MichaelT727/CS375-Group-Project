@@ -19,14 +19,11 @@
             </ul>
         </div>
     </nav>
-
     <!-- Main Container -->
     <div class="container">
         <h1 class="page-title">Create Your Travel Plan</h1>
-
         <!-- Search Section -->
         <div class="search-section">
-
             <form class="search-form" id="searchForm" action="/plan" method="GET">
                 <div class="input-group">
                     <label for="airport">Starting Airport Code</label>
@@ -38,7 +35,6 @@
                 </div>
                 <div class="input-group">
                     <label for="country">Destination Country</label>
-
                     <input type="text" id="country" name="country" placeholder="e.g., US">
                 </div>
                 <div class="input-group">
@@ -49,12 +45,10 @@
                     <label for="endDate">End Date</label>
                     <input type="date" id="endDate" name="endDate">
                 </div>
-
                 <button type="submit" class="search-btn">Submit</button>
-
+                <button type="button" class="save-btn" id="saveBtn">Save Plan</button>
             </form>
         </div>
-
         <!-- Weather Forecast Section -->
         <div class="content-section">
             <h2 class="section-title">
@@ -67,7 +61,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Flights Section -->
         <div class="content-section">
             <h2 class="section-title">
@@ -80,7 +73,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Google Maps Section -->
         <div class="content-section">
             <h2 class="section-title">
@@ -91,6 +83,49 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('saveBtn').addEventListener('click', function () {
+            const airport = document.getElementById('airport').value;
+            const city = document.getElementById('city').value;
+            const country = document.getElementById('country').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!airport || !city || !country || !startDate || !endDate) {
+                alert('Please fill in all fields before saving.');
+                return;
+            }
+
+            const planData = {
+                airport: airport,
+                city: city,
+                country: country,
+                startDate: startDate,
+                endDate: endDate
+            };
+
+            fetch('/save-plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(planData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Plan saved successfully!');
+                    } else {
+                        alert('Error saving plan: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error saving plan');
+                });
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 
