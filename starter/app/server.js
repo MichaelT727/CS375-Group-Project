@@ -77,6 +77,7 @@ app.use("/home", express.static("home"));
 app.use("/create-account", express.static("registration"));
 app.use("/login", express.static("login"));
 app.use("/plan-creation", express.static("plan_creation"));
+app.use("/saved-plans", express.static("saved_plans"));
 app.use("/search-flights", express.static("flights"));
 app.use('/map', express.static("map"));
 
@@ -181,7 +182,6 @@ app.get("/plan", (req, res) => {
     });
 });
 
-// Add this to your server.js
 app.post('/save-plan', async (req, res) => {
   try {
     const { airport, city, country, startDate, endDate } = req.body;
@@ -195,6 +195,16 @@ app.post('/save-plan', async (req, res) => {
   } catch (error) {
     console.error('Error saving plan:', error);
     res.json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/travel-data', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM planners ORDER BY id LIMIT 1');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching travel data:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

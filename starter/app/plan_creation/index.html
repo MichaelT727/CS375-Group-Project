@@ -9,52 +9,46 @@
 </head>
 
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">Travel Planner</div>
             <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="#plans">My Plans</a></li>
+                <li><a href="home/index.html">Home</a></li>
+                <li><a href="saved_plans/index.html">My Plans</a></li>
                 <li><a href="#account">Account</a></li>
             </ul>
         </div>
     </nav>
-    <!-- Main Container -->
+
     <div class="container">
         <h1 class="page-title">Create Your Travel Plan</h1>
-        <!-- Search Section -->
-        <div class="search-section">
-            <form class="search-form" id="searchForm" action="/plan" method="GET">
-                <div class="input-group">
-                    <label for="airport">Starting Airport Code</label>
-                    <input type="text" id="airport" name="airport" placeholder="e.g., LAX, JFK" maxlength="3">
-                </div>
-                <div class="input-group">
-                    <label for="city">Destination City</label>
-                    <input type="text" id="city" name="city" placeholder="e.g., Your Mom's House">
-                </div>
-                <div class="input-group">
-                    <label for="country">Destination Country</label>
-                    <input type="text" id="country" name="country" placeholder="e.g., US">
-                </div>
-                <div class="input-group">
-                    <label for="startDate">Start Date</label>
-                    <input type="date" id="startDate" name="startDate">
-                </div>
-                <div class="input-group">
-                    <label for="endDate">End Date</label>
-                    <input type="date" id="endDate" name="endDate">
-                </div>
-                <button type="submit" class="search-btn">Submit</button>
-                <button type="button" class="save-btn" id="saveBtn">Save Plan</button>
-            </form>
-        </div>
-        <!-- Weather Forecast Section -->
+
         <div class="content-section">
-            <h2 class="section-title">
-                7-Day Weather Forecast
-            </h2>
+            <h2 class="section-title">Flights</h2>
+            <div id="flightInfo">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Flight information will appear here
+                </div>
+            </div>
+            <button type="button" class="search-btn" onclick="window.location.href='/search-flights'">Check Out
+                Flights</button>>
+        </div>
+
+        <div class="content-section">
+            <h2 class="section-title">Locations</h2>
+            <div id="locationsList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Locations list will appear here
+                </div>
+            </div>
+            <button type="button" class="search-btn" onclick="window.location.href='/locations-page'">Go to
+                Locations</button>
+        </div>
+
+        <div class="content-section">
+            <h2 class="section-title">7-Day Weather Forecast</h2>
             <div id="weatherContent" class="weather-grid">
                 <div class="loading">
                     <div class="spinner"></div>
@@ -62,56 +56,18 @@
                 </div>
             </div>
         </div>
-        <!-- Flights Section -->
-        <div class="content-section">
-            <h2 class="section-title">
-                Available Flights
-            </h2>
-            <div id="flightsContent">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    Enter travel details to search for flights
-                </div>
-            </div>
-        </div>
-        <!-- Google Maps Section -->
-        <div class="content-section">
-            <h2 class="section-title">
-                Destination Map
-            </h2>
-            <div id="mapContainer" class="map-container">
-                Map will load here when you select a destination
-            </div>
-        </div>
+
+        <button type="button" class="save-btn" id="saveBtn">Save Plan</button>
     </div>
 
     <script>
         document.getElementById('saveBtn').addEventListener('click', function () {
-            const airport = document.getElementById('airport').value;
-            const city = document.getElementById('city').value;
-            const country = document.getElementById('country').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            if (!airport || !city || !country || !startDate || !endDate) {
-                alert('Please fill in all fields before saving.');
-                return;
-            }
-
-            const planData = {
-                airport: airport,
-                city: city,
-                country: country,
-                startDate: startDate,
-                endDate: endDate
-            };
-
             fetch('/save-plan', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(planData)
+                body: JSON.stringify({})
             })
                 .then(response => response.json())
                 .then(data => {

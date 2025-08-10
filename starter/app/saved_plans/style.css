@@ -1,0 +1,105 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    color: #333;
+}
+
+h1 {
+    color: white;
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+#travelData {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 100%;
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+}
+
+#travelData:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+}
+
+#travelData p {
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 15px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+#travelData p:hover {
+    background: rgba(102, 126, 234, 0.15);
+    transform: translateX(5px);
+}
+
+#travelData p:last-child {
+    margin-bottom: 0;
+}
+
+#travelData span {
+    font-weight: 600;
+    color: #667eea;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    min-width: 200px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#locations {
+    font-style: italic;
+    color: #888 !important;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    #travelData {
+        padding: 2rem;
+    }
+
+    #travelData p {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    #travelData span {
+        min-width: auto;
+        width: 100%;
+    }
+}
