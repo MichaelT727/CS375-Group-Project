@@ -43,19 +43,40 @@ pool
 // Global Token Storage to Keep Track of Sessions
 let tokenStorage = {};
 
+async function loadTokenStorageFromDatabase() {
+  let result;
+  try {
+    result = await pool.query(
+      `SELECT * FROM session_storage;`,
+    );
+  } catch (error) {
+    console.log("SELECT FAILED", error);
+
+    // 500: Internal Server Error - Something wrong with DB
+    return res.sendStatus(500);
+  }
+  for (let tokenRow of result.rows) {
+    tokenStorage[tokenRow['session_token']] = tokenRow.email
+  }
+
+  console.log("Loaded Session Tokens from DB:", tokenStorage);
+}
+loadTokenStorageFromDatabase();
+
 /* middleware; check if login token in token storage, if not, 403 response */
 let authorize = (req, res, next) => {
   let token = req.cookies.token;
-  console.log(token, tokenStorage);
   if (token === undefined || !tokenStorage.hasOwnProperty(token)) {
-    res.redirect("/login");
-    return res.sendStatus(403); // TODO
+    return res.redirect("/login");
   }
   next();
 };
 
 /* middleware; check if login token in token storage, if yes, redirect to logged in home page*/
 let redirectHomeIfLoggedIn = (req, res, next) => {
+  if (req.path !== "/") {
+    return next();
+  }
   let token = req.cookies.token;
   if (token && tokenStorage.hasOwnProperty(token)) {
     return res.redirect("/home");
@@ -70,17 +91,22 @@ app.use(express.json());
 
 app.use('/images', express.static("images"));
 
-app.use("/", express.static("public"));
+app.use("/", redirectHomeIfLoggedIn, express.static("public"));
 
 // homepage for logged in users
-app.use("/home", express.static("home"));
+app.use("/home", authorize, express.static("home"));
+
+app.use("/plan", authorize, express.static("itinerary"));
 
 app.use("/create-account", express.static("registration"));
 app.use("/login", express.static("login"));
+
 app.use("/plan-creation", express.static("plan_creation"));
 app.use("/search-flights", express.static("flights"));
 app.use('/map', express.static("map"));
 app.use('/mapV2', express.static("mapV2"));
+app.use("/planner", express.static("planner"));
+app.use('/hotels', express.static("hotels"));
 
 app.get("/flights", (req, res) => {
   let from = req.query.from;
@@ -100,8 +126,28 @@ app.post("/flights", (req, res) => {
   const token = req.cookies.token;
   const email = tokenStorage[token];
 
+  if (!email) {
+    return res.status(401).json({ message: "Failed because of email" });
+  }
+
   const { flightData } = req.body;
 
+  pool.query(
+    `
+    INSERT INTO travel_planners (email, flights)
+    VALUES ($1, $2)
+    RETURNING id
+    `,
+    [email, flightData]
+  ).then(() => {
+    res.status(200).json({ message: "Flight saved successfully" });
+  })
+    .catch((error) => {
+      console.log(error);
+      res.sendStatus(500);
+    });
+
+  /*
   const {flightNumber, origin, destination, departure, returnDate, adults, children, infants, travelClass, cost, duration,} = flightData;
   pool.query(
     `INSERT INTO flight(flightNumber, origin, destination, departure, returnDate, adults, children, infants, travelClass, cost, duration) 
@@ -115,11 +161,25 @@ app.post("/flights", (req, res) => {
     console.log(error);
     res.sendStatus(500);
   })
+    */
+});
+app.get("/amadeus/token", async (req, res) => {
+  try {
+    const tokenRes = await axios.post("https://test.api.amadeus.com/v1/security/oauth2/token",
+      new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: amadeusKey,
+        client_secret: amadeusSecret
+      })
+    );
+    res.json({ access_token: tokenRes.data.access_token });
+  } catch (error) {
+    res.status(500);
+  }
 });
 
 app.post("/create-account", (req, res) => {
   let body = req.body;
-  console.log(body);
 
   //passwords are encrypted with a salt
   //to check and compare passwords for authentication, use:
@@ -138,7 +198,31 @@ app.post("/create-account", (req, res) => {
   })
 })
 
-app.get("/plan", (req, res) => {
+app.get("/plans", async (req, res) => {
+  const token = req.cookies.token;
+  const email = tokenStorage[token];
+
+  if (!email) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  pool.query(
+    `
+    SELECT id, flights, hotels, landmarks, created_at, updated_at
+    FROM travel_planners
+    WHERE email = $1
+    ORDER BY created_at DESC
+    `,
+    [email]
+  ).then(result => {
+    res.json(result.rows);
+  }).catch(err => {
+    console.error(err);
+    res.sendStatus(500);
+  });
+});
+
+app.get("/api/plans", (req, res) => {
   let city = req.query.city;
   let country = req.query.country;
   let airport = req.query.airport;
@@ -193,7 +277,7 @@ let cookieOptions = {
 };
 function validateLogin(body) {
   // TODO
-  return true;
+  return body.email && body.passwordAttempt;
 }
 
 app.post("/login", async (req, res) => {
@@ -222,7 +306,7 @@ app.post("/login", async (req, res) => {
   }
 
   //should only ever return 1 row since emails are unique
-  if(result.rows.length === 1){
+  if (result.rows.length === 1) {
     let account = result.rows[0];
     console.log(account);
     console.log(account.first_name)
@@ -230,8 +314,24 @@ app.post("/login", async (req, res) => {
     let token = makeToken();
     console.log("Generated token", token);
     tokenStorage[token] = email;
+
+    //save token to db
+    try {
+      result = await pool.query(
+        `INSERT INTO session_storage(session_token, email) 
+        VALUES($1, $2)
+        RETURNING *`,
+        [token, email],
+      );
+    } catch (error) {
+      console.log("SELECT FAILED", error);
+
+      // 500: Internal Server Error - Something wrong with DB
+      return res.sendStatus(500);
+    }
+
     return res.cookie("token", token, cookieOptions).send();
-  }else{
+  } else {
     // Credentials Bad
     return res.sendStatus(400);
   }
@@ -248,6 +348,20 @@ app.post("/logout", (req, res) => {
   if (!tokenStorage.hasOwnProperty(token)) {
     console.log("Token doesn't exist");
     return res.sendStatus(400); // TODO
+  }
+
+  //delete token from db
+  console.log("Deleted:")
+  try {
+    result = pool.query(
+      `DELETE FROM session_storage WHERE session_token=$1 AND email=$2`,
+      [token, tokenStorage[token]],
+    );
+  } catch (error) {
+    console.log("SELECT FAILED", error);
+
+    // 500: Internal Server Error - Something wrong with DB
+    return res.sendStatus(500);
   }
 
   console.log("Before", tokenStorage);
