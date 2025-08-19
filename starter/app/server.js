@@ -14,7 +14,6 @@ app.use(cookieParser());
 const path = require("path");
 app.use("/bootstrap", express.static(path.join(__dirname, "..", "node_modules", "bootstrap", "dist")));
 
-const path = require("path");
 const helmet = require("helmet");
 
 // Serve bootstrap safely from your own app path
