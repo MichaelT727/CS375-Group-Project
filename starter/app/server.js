@@ -11,7 +11,8 @@ let cookieParser = require("cookie-parser");
 let crypto = require("crypto");
 app.use(cookieParser());
 
-const hostname = "localhost";
+const path = require("path");
+app.use("/bootstrap", express.static(path.join(__dirname, "..", "node_modules", "bootstrap", "dist")));
 
 const useSSL =
   process.env.DATABASE_SSL === "true" ||
@@ -377,6 +378,6 @@ app.get("/mapV2/config/maps-api-url", (req, res) => {
   res.json({ url });
 });
 
-app.listen(port, hostname, () => {
-  console.log(`Listening at: http://${hostname}:${port}`);
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`);
 });

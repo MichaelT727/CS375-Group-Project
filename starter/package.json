@@ -1,15 +1,28 @@
 {
+  "name": "cs375-travel-planner",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Node/Express app for trip planning",
+  "main": "app/server.js",
   "scripts": {
-    "start": "cd app && node server.js",
-    "setup": "psql -U postgres -f setup.sql"
+    "start": "node app/server.js",
+    "dev": "nodemon app/server.js",
+    "schema:reset": "psql \"$DATABASE_URL\" -f schema_reset.sql",
+    "db:seed": "psql \"$DATABASE_URL\" -f seed.sql"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "axios": "^1.11.0",
     "bootstrap": "^5.3.7",
-    "dotenv": "^17.2.1",
     "cookie-parser": "^1.4.7",
-    "crypto": "^1.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
