@@ -14,6 +14,37 @@ app.use(cookieParser());
 const path = require("path");
 app.use("/bootstrap", express.static(path.join(__dirname, "..", "node_modules", "bootstrap", "dist")));
 
+const path = require("path");
+const helmet = require("helmet");
+
+// Serve bootstrap safely from your own app path
+app.use("/bootstrap", express.static(path.join(__dirname, "..", "node_modules", "bootstrap", "dist")));
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      "default-src": ["'self'"],
+      "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+      "style-src": ["'self'", "'unsafe-inline'"],
+
+      "img-src": ["'self'", "data:", "https:"],
+      "font-src": ["'self'", "data:"],
+      "connect-src": [
+        "'self'",
+        "https://test.api.amadeus.com",
+        "https://api.openweathermap.org",
+        "https://*.render.com"
+      ],
+
+      "worker-src": ["'self'", "blob:"],
+
+      "frame-src": ["'self'", "https://www.google.com", "https://maps.google.com"]
+    }
+  }
+}));
+
+
 const useSSL =
   process.env.DATABASE_SSL === "true" ||
   process.env.NODE_ENV === "production" ||
