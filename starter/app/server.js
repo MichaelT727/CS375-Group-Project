@@ -4,14 +4,10 @@ const express = require("express");
 const app = express();
 const axios = require("axios");
 
-const port = process.env.PORT || 3000;
-
 const pg = require("pg");
 let cookieParser = require("cookie-parser");
 let crypto = require("crypto");
 app.use(cookieParser());
-
-const hostname = "localhost";
 
 const useSSL =
   process.env.DATABASE_SSL === "true" ||
@@ -668,6 +664,6 @@ app.get("/api/city-hero", async (req, res) => {
 });
 // saved-plans image display end //
 
-app.listen(port, hostname, () => {
-  console.log(`Listening at: http://${hostname}:${port}`);
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
