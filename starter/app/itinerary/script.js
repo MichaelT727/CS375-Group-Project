@@ -49,9 +49,9 @@ fetch("/get-plan?id=" + planId).then((response) => {
         planNameLabel.textContent = body['plan_name'];
 
         // Flight Cards - Handle both data structures
-        if (body.flights && body.flights.hasOwnProperty("flightData")) {
+        if (body.flights && (Object.keys(body.flights).length > 0)) {
             // Structure from first script
-            let flightInfo = body.flights.flightData;
+            let flightInfo = body.flights;
 
             let flightDetailInclude = {
                 "cost": "Flight Cost", "travelClass": "Travel Class", "flightNumber": "Flight Number",
@@ -94,36 +94,14 @@ fetch("/get-plan?id=" + planId).then((response) => {
             // Fetch weather using detailed flight info
             fetchWeatherForecast(flightInfo.destination, flightInfo.departure, flightInfo.returnDate);
 
-        } else if (body.flights) {
-            // Structure from second script (simpler)
-            let flightInfo = body.flights;
-            let flightInfoCard = document.getElementById("flight-info");
-            let doNotInclude = ["origin", "departure", "duration", "returnDate", "destination"];
-
-            document.getElementById("airport").textContent += flightInfo.origin;
-            document.getElementById("startDate").textContent = flightInfo.departure;
-            document.getElementById("endDate").textContent = flightInfo.returnDate;
-            document.getElementById("destination").textContent = flightInfo.destination;
-
-            for (var flightDetail in flightInfo) {
-                if (!doNotInclude.includes(flightDetail)) {
-                    let detailP = document.createElement("p");
-                    detailP.className = "card-text";
-                    detailP.textContent = flightDetail + ": " + flightInfo[flightDetail];
-                    flightInfoCard.appendChild(detailP);
-                }
-            }
-
-            // Fetch weather using simple flight info
-            fetchWeatherForecast(flightInfo.destination, flightInfo.departure, flightInfo.returnDate);
         } else {
             console.log("No flight data found");
             document.getElementById("airport").textContent = "A flight was not selected.";
         }
 
         // Hotel Cards
-        if (body.hotels && body.hotels.hasOwnProperty("hotelData")) {
-            let hotelData = body.hotels.hotelData.data;
+        if (body.hotels && (Object.keys(body.hotels).length > 0)) {
+            let hotelData = body.hotels//.hotelData.data;
             let hotelContainer = document.getElementById("hotels");
             document.getElementById('hotels-amount').textContent += hotelData.hotels.length;
             for (var key in hotelData.hotels) {
